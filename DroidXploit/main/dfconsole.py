@@ -1,37 +1,47 @@
 #!/usr/bin/python
-import sys, os
+import sys, os, subprocess
 sys.path.append("/home/deepal/android/workspace/DroidXploit")
+sys.path.append("/home/deepal/git/droidXploit/DroidXploit")
 
-import glob, sqlite3, socket
+import glob, sqlite3, socket, signal, thread
 from collections import OrderedDict
 from resources.resources import bcolors
 
+def signalHandler(signum, frame):
+    return
+    
 def injectorHandler():
     print "This is the Malware Injector module"
 
-
-def scanerHandler():
+def scannerHandler():
     print "This is the Scanner module"
 
 
 def remoteExploitHandler():
     print "This is the Remote Exploitation Module"
-
     
 def helpViewer(basiccmdlist, dbcmdlist):
     print bcolors.OKBLUE+"\nBasic Commands"
     print "----------------"
     for key, value in basiccmdlist.items():
         print "\t",key,"\t\t",value
-    
+
     print "\nDatabse Commands"
     print "------------------"    
     for key, value in dbcmdlist.items():
         print "\t",key,"\t\t",value
     print bcolors.ENDC
 
+def shellEx(command):
+    args = []
+    argTuple = command.split(" ")
+    args += argTuple
+    subprocess.call(args)
+    
+    
+
 def infoViewer():
-    print "--------DroidXploit Android Exploitation Framework"
+    print "--------DroidXploit Android Exploitation Framework-----------------------"
 
 def searchModule():
     pass
@@ -41,18 +51,18 @@ def useModuleHandler(moduleName):
     
 
 
-logo = "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||\n"\
-       "|||||              |||||        ||||||||      ||||                 |||\n"\
-       "||||||||||||  ||||   |||||||   ||||||||||   ||||||   |||||||||||||||||\n"\
-       "||||||||||||  ||||||   |||||||   |||||||   |||||||   |||||||||||||||||\n"\
-       "||||||||||||  |||||||  ||||||||   |||||   ||||||||          ||||||||||\n"\
-       "||||||||||||  |||||||  ||||||||||   |    |||||||||   |||||||||||||||||\n"\
-       "||||||||||||  |||||||  |||||||||||     |||||||||||   |||||||||||||||||\n"\
-       "||||||||||||  ||||||  ||||||||||        ||||||||||   |||||||||||||||||\n"\
-       "||||||||||||  |||||  ||||||||||   ||||    ||||||||   |||||||||||||||||\n"\
-       "|||||||             |||||||||   ||||||||    ||||||   |||||||||||||||||\n"\
-       "||||||||||||||||||||||||||        ||||         |||   |||||||||||||||||\n"\
-       "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||\n"
+logo = "######################################################################\n"\
+       "#####              #####        ########      ####                 ###\n"\
+       "############  ####   #######   ##########   ######   #################\n"\
+       "############  ######   #######   #######   #######   #################\n"\
+       "############  #######  ########   #####   ########          ##########\n"\
+       "############  #######  ##########   #    #########   #################\n"\
+       "############  #######  ###########     ###########   #################\n"\
+       "############  ######  ##########        ##########   #################\n"\
+       "############  #####  ##########   ####    ########   #################\n"\
+       "#######             #########   ########    ######   #################\n"\
+       "##########################        ####         ###   #################\n"\
+       "######################################################################\n"
 
 print bcolors.BOLD+logo+bcolors.ENDC
 
@@ -62,8 +72,9 @@ command = ""
 
 
 
-basiccmdlist = OrderedDict([("?","View this help page"), ("help","View this help page"),("search","Search for a module"),("use","Go to a module"),("quit","Exit DroidXploit Framework"),("exit","Exit DroidXploit Framework")])
+basiccmdlist = OrderedDict([("?","View this help page"), ("help","View this help page"),("search","Search for a module"),("use","Go to a module"),("shell {cmd}","Execute a shell command with parameters"),("clear","Clear Screen"),("quit","Exit DroidXploit Framework"),("exit","Exit DroidXploit Framework")])
 dbcmdlist = OrderedDict([])
+signal.signal(signal.SIGINT, signalHandler)
 
 while command.lower() != "exit" and command.lower()!= "quit":
     col = bcolors()
@@ -91,8 +102,22 @@ while command.lower() != "exit" and command.lower()!= "quit":
             print bcolors.FAIL+"[-] No module specified!\n"+bcolors.ENDC
         useModuleHandler(moduleName)
     
+    elif command.lower()[0:5] == "shell":
+        shellEx(command.lower()[6:])
+        
+    elif command.lower() == "clear":
+        shellEx("clear")
+    
+    elif command.lower() == "exit" or command.lower() == "quit" or command.lower() == "":
+        prompt = raw_input("Are you sure to exit? (y/n) : ")
+        if prompt == "y" or prompt == "Y":
+            continue;
+        else:
+            command = ""
+            
+
     else:
-        print col.FAIL+"\n[-] Command not found !\n"+col.ENDC
+        print col.FAIL+"[-] Command not found !\n"+col.ENDC
 
     
     
