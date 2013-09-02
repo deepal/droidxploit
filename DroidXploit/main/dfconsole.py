@@ -11,7 +11,7 @@ def signalHandler(signum, frame):
     return
     
 def injectorHandler():
-    print "This is the Malware Injector module"
+    print "This is the Malware injection module"
 
 def scannerHandler():
     print "This is the Scanner module"
