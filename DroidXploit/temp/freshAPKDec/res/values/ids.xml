@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="tvCelcius">false</item>
+    <item type="id" name="tvFarenheit">false</item>
+    <item type="id" name="txtFarenheit">false</item>
+    <item type="id" name="txtCelcius">false</item>
+    <item type="id" name="textView1">false</item>
+    <item type="id" name="tvKelvin">false</item>
+    <item type="id" name="txtKelvin">false</item>
+    <item type="id" name="btnClear">false</item>
+    <item type="id" name="btnGo">false</item>
+    <item type="id" name="action_settings">false</item>
+</resources>

